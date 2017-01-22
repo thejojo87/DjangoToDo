@@ -40,6 +40,12 @@ https://github.com/mozilla/geckodriver/releases
 这个是因为run错了。
 pycharm，run configuration里有Django server，而不是像之前一样的python里，添加manage。
 
+## 问题3：Django url引用出错。
+
+django1.10开始修改了地址引用方式。
+需要直接在上面引用，然后下面是变量，而不是string
+
+http://stackoverflow.com/questions/38744285/django-urls-error-view-must-be-a-callable-or-a-list-tuple-in-the-case-of-includ
 
 # 总结
 
@@ -142,3 +148,115 @@ self.browser.implicitly_wait(3)
 第二章结束
 
 # 第三章 使用单元测试，测试简单的首页
+
+创建django应用。
+django项目可以多好几个app。
+python manage.py startapp lists
+
+对比上面是project
+django-admin.py startproject TODO
+
+## 3.2 单元测试和功能测试的区别
+
+功能测试是用户的角度，外面测试。
+单元测试是程序员的角度。
+
+顺序是，先用功能测试，再单元测试。
+
+## 3.3 Django中的单元测试
+
+新建的app里，直接就有个tests.py文件
+里面是Django提供的TestCase这个类，是增强的unittest.testcase
+
+启动test命令行命令是
+python manage.py test
+我有个问题，如果好几个app的tests，那么都test么？
+
+运行测试的时候，测试程序会在所有以test开头的文件中查找所有的test cases(inittest.TestCase的子类),自动建立测试集然后运行测试。
+
+注意：如果测试是基于数据库访问的(读取、查询Model)，一定要用django.test.TestCase建立测试类，而不要用unittest.TestCase。
+
+
+Runing tests
+
+```python
+执行目录下所有的测试(所有的test*.py文件)：
+1
+
+$ python manage.py test
+
+执行animals项目下tests包里的测试：
+1
+
+$ python manage.py test animals.tests
+
+执行animals项目里的test测试：
+1
+
+$ python manage.py test animals
+
+单独执行某个test case：
+1
+
+$ python manage.py test animals.tests.AnimalTestCase
+
+单独执行某个测试方法：
+1
+
+$ python manage.py test animals.tests.AnimalTestCase.test_animals_can_speak
+
+为测试文件提供路径：
+1
+
+$ python manage.py test animals/
+
+通配测试文件名：
+1
+
+$ python manage.py test --pattern="tests_*.py"
+
+启用warnings提醒：
+1
+
+$ python -Wall manage.py test
+```
+
+## 3.4 mvc 视图 url
+
+django的工作方式是，http请求地址。
+然后计算哪个函数处理。
+相应的视图做出反应。
+
+写个测试
+使用了django内部的resolve函数，用来解析地址
+这个测试当然失败。因为根本没写url解析函数嘛。
+
+## 3.6 urls.py
+url前半部分是正则表达式，后半部分是函数。
+也可以用include，包含其他urls文件
+
+这里有个问题，Django1.10修改了url引用方式，不再允许string了。
+直接再上面引用模块
+
+如果有很多视图，一个个引用不方便。
+可以直接从lists import views as lists_views
+
+## 3.7 为视图编写单元测试
+
+```python
+    def test_home_page_returns_correct_html(self):
+        request = HttpRequest()
+        response = home_page(request)
+        self.assertTrue(response.content.startswith(b'<html>'))
+        self.assertIn(b'<title>To-Do lists</title>', response.content)
+        self.assertTrue(response.content.endswith(b'</html>'))
+
+def home_page(request):
+    return HttpResponse('<html><title>To-Do lists</title></html>')
+
+```
+
+就是，测试模块，指出用哪个函数，然后views里的函数，指出返回什么对象
+
+第三章结束。
+
