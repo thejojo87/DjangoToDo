@@ -37,6 +37,7 @@ https://github.com/mozilla/geckodriver/releases
 
 ## 问题2：pycharm运行runserver，会有exit
 
+Process finished with exit code -1073741819 (0xC0000005)
 这个是因为run错了。
 pycharm，run configuration里有Django server，而不是像之前一样的python里，添加manage。
 
@@ -259,4 +260,31 @@ def home_page(request):
 就是，测试模块，指出用哪个函数，然后views里的函数，指出返回什么对象
 
 第三章结束。
+
+# 第四章 编写这些测试有什么用
+
+在functional_tests文件里 selenium模拟的功能测试给写完。
+写测试的时候，需要开启服务器。
+
+函数里，返回html，很愚蠢，所以需要使用模板。
+返回的是模板文件。
+
+在lists/templates/home.html
+写个最简单的html文件。
+然后lists/views.py里
+return render home.html
+最后注册templates
+其实并不是templates没有注册，而是，lists在项目里没有注册到。
+在settings里，installed_apps里添加‘lists’
+
+运行test测试，通过了。
+再检查一下，是否返回正确html模板。
+接下来测试功能测试。
+
+写html文件。
+功能测试，就写到有个table。输入项。
+assert还可以自定义返回的错误信息。
+
+第四章结束。
+
 
