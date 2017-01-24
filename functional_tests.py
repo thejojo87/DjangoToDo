@@ -8,6 +8,9 @@ import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+import time
+
+
 
 
 class NewVisitorTest(unittest.TestCase):
@@ -41,6 +44,7 @@ class NewVisitorTest(unittest.TestCase):
 
         # 她输入后，页面更新了，显示了她输入的项目
         inputbox.send_keys(Keys.ENTER)
+        # time.sleep(10)
 
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')

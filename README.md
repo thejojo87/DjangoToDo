@@ -287,4 +287,109 @@ assert还可以自定义返回的错误信息。
 
 第四章结束。
 
+# 第五章 保存用户输入
+
+首先input改成form，POST。
+
+然后引入time.sleep(10)
+可以看到forbidden，csrf。
+input下面
+添加一个自带的{% csrf_token %}
+
+但是这里有个问题，加了csrf后，上面的返回正确网址测试就无法通过。
+
+
+## 5.2 在服务器中处理POST请求
+
+为表单action返回主页。
+先写个测试。
+lists/tests.py里
+
+然后在views里，写home_page函数。
+如果要求是post，那么返回post请求里，item——text标签数据。
+
+## 5.3 把python变量传入模板中渲染
+
+home.html里添加new_item_text
+
+在tests里测试的时候传入。
+
+在views里，传入POST的参数
+
+
+## 5.5 数据库迁移
+
+先在models文件里，生成item
+注意一下，这里默认字符串为空用双引号。
+
+python manage.py makemigrations
+就会出现一个migrations文件夹
+
+## 5.9 使用迁移创建生产数据库
+
+test是django生成的测试数据库。
+真正的数据库，要自己创建
+在settings里设置Database
+默认是sqlite3
+
+在这里有个问题，如果用python manage.py shell启动试一下，
+会发现Error loading MySQLdb module: No module named 'MySQLdb'
+
+这是因为mysqldb并不兼容于python3
+
+https://docs.djangoproject.com/en/1.10/ref/databases/#mysql-notes
+
+这里的文档，给出了3个选项。
+反正都是第一次，我都试一下吧。
+
+http://www.jianshu.com/p/ecc941e861ee
+
+### mysqlclient
+这个是django官方推荐的做法。
+首先pip install 之后 弹出错误，说需要c++ build tools
+http://landinghub.visualstudio.com/visual-cpp-build-tools
+
+那就装吧。
+
+还是遇到很多问题，放弃了，算了。
+
+### 试一下pymysql来代替
+
+因为之前就是用这个链接的。
+pip install pymysql
+然后在init文件里。
+
+```python
+import pymysql
+pymysql.install_as_MySQLdb()
+```
+
+就可以了。python manage.py shell 试一下。
+
+发现可以了。
+那么python manage.py migrate
+
+
+```python
+DATABASES = {
+    'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': 'django_todo',
+        'USER': 'root',
+        'PASSWORD': 'password',  ## 安装 mysql 数据库时，输入的 root 用户的密码
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
+```
+forloop.counter，这个可以按照循环次数，增加1，2，3.。。
+
+
+第五章结束，实际上，我放弃了从5.3开始跟踪tdd了。
+因为实在是太繁琐了。
+
+# 第六章 完成最简可用的网站
+
 
