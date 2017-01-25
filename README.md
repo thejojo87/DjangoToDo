@@ -429,3 +429,56 @@ views里new_list也要修改
 
 接下来，每个列表都应该有自己的url
 要做的就是捕获url-正则表达式
+
+
+# 第二部分 Web开发要素
+# 第七章 美化网站：布局，样式，及其测试方法
+
+首先居中：输入框
+
+```html
+<p style="text-align: center;">
+```
+
+使用bootstrap。
+在这里需要引用模板这个概念
+
+django自带的模板还是，jinja2.这是个问题。
+貌似区别很小。
+
+先新建一个base.html吧
+
+
+引用bootstrap就可以了。
+没必要下载。
+
+http://v3.bootcss.com/getting-started/
+
+这里提供cnd加速服务。
+
+超大文本快-jumbotron
+
+大型输入框-class="form-control input-lg"
+
+样式化表格-class="table"
+
+使用自己编写的css
+
+因为在setting里，static选项是‘static’
+也就是说，只要css地址用/static开头，那么就会在
+应用里，寻找对应的base.css文件
+
+
+## collectstatic命令
+
+因为你可能需要css放在其他地方，你需要备份保存在专门的文件夹里。
+在工程目录新建一个static目录
+
+然后setting里设置
+
+STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, './static'))
+
+然后启动 python manage.py collectstatic
+
+# 第八章 使用过度网站测试部署
+

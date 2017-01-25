@@ -1,28 +1,23 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse
 from lists.models import Item,List
-
-
 # Create your views here.
 
+# 这个也没有毛病
 def home_page(request):
     # return HttpResponse('<html><title>To-Do lists</title></html>')
     # if request.method == "POST":
     #     return HttpResponse(request.POST['item_text'])
-
-
-
-
     return render(request, 'home.html'
     )
 
-
+# 这个没有任何毛病
 def view_list(request, list_id):
     list_ = List.objects.get(id=list_id)
     # items = Item.objects.filter(list=list_)
     return render(request, 'list.html',{'list':list_}
     )
 
+# 这个没有毛病
 def new_list(request):
     list_ = List.objects.create()
     Item.objects.create(text=request.POST['item_text'],list=list_)
