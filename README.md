@@ -482,3 +482,107 @@ STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, './static'))
 
 # 第八章 使用过度网站测试部署
 
+## 8.3 购买域名
+首先需要买个域名
+去腾讯云买了个2块钱的域名。
+不过网站需要备案，需要购买服务。
+充值了1块钱，买了个3毛钱1小时的主机。
+结果4个小时后欠费1块钱，被关掉了。
+不过备案还是顺利申请了。等结果吧。
+
+域名买到了。
+
+## 8.4 手动配置托管网站的服务器
+
+配置分为两个部分。
+1. 配置新服务器，托管代码
+2. 新版代码部署到服务器
+
+部署到哪里呢？
+也可以分为两类。
+fu'wuf
+1. 自己的服务器
+2. paas-heroku之类的
+
+微软的azure，amazon aws，digital ocean都是选项。
+
+先用azure试一下。
+微软的azure貌似也提供网站webapp-paas服务
+
+似乎有两种方式。
+一个是使用linux虚拟机，创建pythonweb应用。
+一个是使用azure提供的 django
+
+azure里新建了一个虚拟机。
+新建的时候有个选项，是否ssh，还是密码。
+先密码了。
+不过每次都输入密码，太烦人。
+在密码重置里重新设置了ssh连接，
+其实发现git windows里操作就可以了。
+和mac一模一样。
+ssh的原理就是生成一个密码对。
+自己把当中的公钥上传到服务器，服务器就可以安全链接了。
+ssh只是用来确认身份的，所以一份可以在各个不同的网站同时使用。
+比如github 和 azure不冲突。
+
+http://jingyan.baidu.com/article/a65957f4e91ccf24e77f9b11.html
+
+然后azure里点击，连接，出现ssh命令
+
+ssh thejojo@xxx.xxx.xxx.xxx
+然后输入密码，就连接上了。
+
+### 8.4.4 安装nginx
+
+sudo apt-get install nginx
+sudo service nginx start
+就启动了nginx了。
+但是现在浏览器访问，那么就看不到nginx界面。
+这是因为azure并不会默认开放外网端口。
+这个改版之后，
+在网络接口-有效的安全规则里存在。
+而且in就是访问，out才是输出。
+in里默认开启了ssh访问。
+
+然后安装了python3 pip3
+virtualenv
+
+### 8.4.5 解析域名
+
+域名太长了。
+去腾讯云，添加域名解析
+
+cname是网站地址
+a是ip地址关联
+
+## 8.5 手动部署代码
+先装mysql吧
+
+https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-16-04
+
+### 8.5.1 调整数据库的位置
+
+这里做的其实就是使用git，把代码从github复制到linux里
+
+git我还没有在虚拟机上配置过，教程里缺少这个。
+
+思路就是，生成一个ssh密钥。
+然后把这个加进我的github里。
+
+cd ~/.ssh && ssh-keygen
+会让你确认密钥保存的地点。
+还有密码。留空
+
+然后cat id_rsa.pub
+把key复制到剪贴板。
+最后到github里，添加就可以了。
+
+教程在这里：
+
+https://git-scm.com/book/zh/v1/%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84-Git-%E7%94%9F%E6%88%90-SSH-%E5%85%AC%E9%92%A5
+
+### 8.5.2 创建虚拟环境
+
+
+
+
