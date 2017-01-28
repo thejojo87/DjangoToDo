@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&jdq6rb%l_zlj1j$!xhlu_1!ub$$i$ipl)y)(&0mdr0!o)pvvy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['thejojo.chinanorth.cloudapp.chinacloudapi.cn']
 
 
 # Application definition
