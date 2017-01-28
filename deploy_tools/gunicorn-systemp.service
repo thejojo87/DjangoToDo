@@ -1,0 +1,21 @@
+# gunicorn Site systemd service file
+
+[Unit]
+Description=Gunicorn server for django_ToDo.service
+After=network.target
+After=syslog.target
+
+[Service]
+User=root
+# Environment=sitedir=/home/thejojo/sites/source
+WorkingDirectory=/home/thejojo/sites/source
+ExecStart=/home/thejojo/sites/virtualenv/bin/gunicorn --bind unix:/tmp/thejojo.xyz.socket python_ToDo.wsgi:application
+Restart=on-failure
+# RuntimeDirectory=gunicorn-stagingd
+# RuntimeDirectoryMode=755
+
+
+#sudo systemctl start django_ToDo.service
+
+[Install]
+WantedBy=multi-user.target
