@@ -48,6 +48,27 @@ django1.10开始修改了地址引用方式。
 
 http://stackoverflow.com/questions/38744285/django-urls-error-view-must-be-a-callable-or-a-list-tuple-in-the-case-of-includ
 
+## 问题4：runserver后台怎么运行？
+直接后面加一个& 就可以了。
+但是后台运行就就不太好杀了。
+端口会表示占用的。
+只好用nginx重启方式了。
+sudo service nginx reload
+
+    You can use netstat -tulpn to see the PID
+    kill -9 PID
+
+## 问题5： upstart已经被淘汰了。systemd
+怎么转换？
+
+https://gist.github.com/marcanuy/5ae0e0ef5976aa4a10a7
+
+http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-part-two.html
+
+https://piaosanlang.gitbooks.io/spiders/content/05day/section5.4.html
+
+
+
 # 总结
 
 
@@ -583,6 +604,349 @@ https://git-scm.com/book/zh/v1/%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84-Git
 
 ### 8.5.2 创建虚拟环境
 
+先安装virtualenv
+pip install virtualenv
+
+然后在本地 pip freeze >requirements.txt
+然后把这个push到git里。
+然后在ssh里，git pull 把requirements文件拉回来。
+virtualenv --python=python3 ../virtualenv/
+
+这样就在上一个目录的virtualenv文件夹里安装了。
+ls ../virtualenv/ 可以查看。
+
+然后安装requirements
+../virtualenv/bin/pip install -r requirements.txt
+requirements里有一个包如果安装失败，那么都会取消。
+所以要去掉那个包继续安装。
+
+pip list 可以查看已经安装的包
+
+启动 是
+ ../virtualenv/bin/python3 manage.py runserver
+
+不过因为mysql没有配置，所以现在会出错。
+虚拟环境里并不一定都需要activate，只要指定python路径就可以了。
+
+### 额外的，ssh里设置mysql
+
+mysql -u root -p
+然后show databases;查看数据库
+create database django_todo;
+这样就创建好了数据库。
+运行起来发现没有任何问题。
 
 
+### 8.5.3 简单配置nginx
+
+简单配置只需要server
+里面是listen 端口，servername 解析的网址
+还有location
+
+sudo vim 新建一个django_todo 文件，注意没有后缀名字
+然后创建一个符号链接。
+把这个加入启用的网站列表里。
+
+这里有两个文件夹。
+site-enabled 和site-avaliable
+放在avaibable，然后把这个链接到enabled
+
+然后删除default文件。
+nginx如果不能重启，那么 查看日志来看哪里出错了。
+sudo service nginx reload
+
+如果这时候去访问的话，会出现502 bad gateway，nginx
+然后启动manage.py
+
+
+```python
+cd sites/source
+../virtualenv/bin/python3 manage.py runserver
+```
+
+就成功出现了
+
+不过因为数据库并没有生成tables
+所以需要migrate
+
+## 8.6 为部署到生产环境做好准备
+
+要安装gunicorn
+这个需要直到wsgi服务器的路径。可以由application函数获取。
+
+```python
+../virtualenv/bin/pip install gunicorn
+../virtualenv/bin/gunicorn python_ToDo.wsgi:application
+
+
+../virtualenv/bin/python3 manage.py collectstatic --noinput
+
+```
+
+现在如果访问主页，会发现所有的样式都消失了。
+因为bootstrap我是直接引用的，消失的只是我自定义的base的css。
+这是因为，Django服务器会自动维护静态文件，但是gunicorn不会。
+
+所以需要配置nginx来服务。
+
+运行上面第三行，就会出现一个static文件夹，里面有base文件。
+
+修改availiable文件夹里的nginx配置文件，加一个location/static
+
+需要注意路径。
+static总共有两处，一个是原来的static，但是这个会因为添加app而增加。
+另一个就是刚才生成的总的static，这个在source总目录下面。
+需要把这个设置为static
+
+cd /etc/nginx/sites-available/
+cd /home/thejojo/sites/source/
+
+../virtualenv/bin/gunicorn python_ToDo.wsgi:application
+ ../virtualenv/bin/gunicorn --bind unix:/tmp/thejojo.xyz.socket python_ToDo.wsgi:application
+
+
+
+
+### 8.6.3 换用Unix套接字
+
+从这里开始网站变成了502.是不是我弄错了？
+
+location原来只是定义了localhost 8000
+但是应该把这个删掉，换成socket方式。
+
+
+如果想同时使用服务器和过度网站，就不能共用8000端口。
+
+所以使用Unix套接字。类似于硬盘中的文件。
+设置了proxy_set_header 和proxy_pass
+不太理解。
+运行命令也换成了这个，但是依然是502
+
+nginx -t 这个命令是用来查询nginx哪里错了的很好的命令。
+
+这个是enable里的thejojo.xyz nginx配置文件
+```python
+server {
+    listen 80;
+    server_name thejojo.xyz;
+
+
+    location /static{
+        alias /home/thejojo/sites/source/static;
+
+        }
+    location /{
+        proxy_set_header Host $host;
+        proxy_pass http://unix:/tmp/thejojo.xyz.socket;
+    }
+}
+```
+
+
+ ../virtualenv/bin/gunicorn --bind unix:/tmp/thejojo.xyz.socket python_ToDo.wsgi:application
+
+现在就是bad request，在下一节需要设置
+### 8.6.4 把debug设为false，设置allowed_hosts
+
+在生产环境里开启了debug，不太好。
+所以要在setting里关掉
+allowed_host 设置为thejojo.xyz 依然是badrequest400
+如果设置为* 那么就可以。
+正确的host是什么呢？
+ALLOWED_HOSTS是为了限定请求中的host值,以防止黑客构造包来发送请求.只有在列表中的host才能访问.强烈建议不要使用*通配符去配置,另外当DEBUG设置为False的时候必须配置这个配置.否则会抛出异常.配置模板如下:
+
+估计正确的是主页网址 thejojo.XXXXX.XXXX.cn
+果然没错，我的xyz域名因为被封锁了，所以无法使用。
+
+
+
+### 8.6.5 使用Upstart确保引导时启动Gunicorn
+
+在这里遇到了难题，无法正常启动upstart
+
+
+但是我启动之后发现， start : command not found
+这是因为ubuntu 15之后改为systemd 了。
+
+
+脚本需要修改的是环境和启动行,runtimedirectory.
+需要的问题是，脚本放在哪里？怎么启动？
+脚本要放在/lib/systemd/system$ python_ToDo.service
+写完后启动sudo systemctl start python_ToDo
+关掉是stop。
+这样的话，不用runtime来启动，
+下一步就是重启服务器，看看能否自动启动nginx
+但是现在启动nginx并没有启动python_ToDo服务
+
+因为无法enable service。
+会出现invalid
+
+我意识到一个事情
+就是install wantedby这个部分我是空着的，一开始以为不需要。
+但是现在发现，系统会用这个字段，来做个链接放在etc/systemd/system里。
+Failed to enable unit: Invalid argument
+就是因为service文件复制的时候，少了注释号，文字错了。
+sudo systemctl enable python_ToDo 生成了链接。
+因为linux只会在etc/systemd/system目录下的文件才会开机启动。
+
+我自己做个链接吧。
+sudo ln -s /lib/systemd/system/python_ToDo.service  /etc/systemd/system/python_ToDo.service
+
+但是原来我把服务给关掉了。
+即便是添加了链接，preset显示enabled，但是active显示inactive。
+如果开了之后重启会如何？
+
+
+
+
+```script
+# Gunicorn Site systemd service file
+
+[Unit]
+Description=Gunicorn server for django_ToDo.service
+After=network.target
+After=syslog.target
+
+[Service]
+User=root
+# Environment=sitedir=/home/thejojo/sites/source
+WorkingDirectory=/home/thejojo/sites/source
+ExecStart=/home/thejojo/sites/virtualenv/bin/gunicorn --bind unix:/tmp/thejojo.xyz.socket python_ToDo.wsgi:application
+Restart=on-failure
+# RuntimeDirectory=gunicorn-stagingd
+# RuntimeDirectoryMode=755
+
+
+#sudo systemctl start django_ToDo.service
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+
+linux删除目录很简单，很多人还是习惯用rmdir，不过一旦目录非空，就陷入深深的苦恼之中，现在使用rm -rf命令即可。
+直接rm就可以了，不过要加两个参数-rf 即：rm -rf 目录名字
+-r 就是向下递归，不管有多少级目录，一并删除
+-f 就是直接强行删除，不作任何提示的意思
+
+第八章到此结束。
+
+# 第九章 使用fabric自动部署
+
+Fabric是什么？
+假定我们有一个Web应用，使用Gunicorn运行，同时后台有一些rqworker处理一些异步的任务。同时supervisor监控这些进程的运行。每次本地修改代码提交之后，一般流程是登录服务器使用git pull 将新的代码拉下来，然后重启这些进程。频繁执行这些机械的流程比较麻烦，我们可以自动化运行这些工作的流程。
+
+pip3 install fabric3
+
+fabric 一般创建一个fabfile.py文件。
+定义函数，然后使用fab 命令行工具调用。
+
+## 9.1 分析一个Fabric部署脚本
+
+放在deploy_tools文件夹里面。
+
+以下划线开头的都不是fabric的公开api
+
+首先定义了site folder和source folder。
+
+新建了几个函数按照启动顺序执行。
+这里1，database没必要，static我的是放在下一级的。
+2 没必要修改
+3 有必要把访问网址写进去
+4 没必要修改
+5 没必要修改
+6 没必要修改
+
+1. 创建目录结构的函数
+2. 拉取源代码的函数
+3. 更新配置文件，设置allowed_host 和debug，创建一个密钥
+4. 创建或者更新virtualenv环境
+5. 更新静态文件
+6. 最后更新数据库
+
+
+```python
+from fabric.contrib.files import append,exists,sed
+from fabric.api import env,local,run
+import random
+
+REPO_URL = "https://github.com/thejojo87/DjangoToDo.git"
+env.host = "thejojo.chinanorth.cloudapp.chinacloudapi.cn"
+
+def deploy():
+    site_folder = '/home/thejojo/sites'
+    source_folder = site_folder + '/source'
+    _create_directory_structure_if_necessary(site_folder)
+    _get_latest_source(source_folder)
+    _update_settings(source_folder, env.host)
+    _update_virtualenv(source_folder)
+    _update_static_files(source_folder)
+    _update_database(source_folder)
+
+def _create_directory_structure_if_necessary(site_folder):
+    for subfolder in ( 'virtualenv', 'source'):
+
+        run('mkdir -p %s/%s' % (site_folder, subfolder))
+
+def _get_latest_source(source_folder):
+    if exists(source_folder + '/.git'):
+        run('cd %s && git fetch' % (source_folder,))
+    else:
+        run('git clone %s %s' % (REPO_URL, source_folder))
+    current_commit = local("git log -n 1 --format=%H", capture=True)
+    run('cd %s && git reset --hard %s' % (source_folder, current_commit))
+
+
+def _update_settings(source_folder, site_name):
+    settings_path = source_folder + '/python_ToDo/settings.py'
+    sed(settings_path, "DEBUG = True", "DEBUG = False")
+    sed(settings_path,
+        'ALLOWED_HOSTS =.+$',
+        'ALLOWED_HOSTS = ["%s"]' % (site_name,)
+    )
+    secret_key_file = source_folder + '/superlists/secret_key.py'
+    if not exists(secret_key_file):
+        chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+        key = ''.join(random.SystemRandom().choice(chars) for _ in range(50))
+        append(secret_key_file, "SECRET_KEY = '%s'" % (key,))
+    append(settings_path, '\nfrom .secret_key import SECRET_KEY')
+
+def _update_virtualenv(source_folder):
+    virtualenv_folder = source_folder + '/../virtualenv'
+    if not exists(virtualenv_folder + '/bin/pip'):
+        run('virtualenv --python=python3 %s' % (virtualenv_folder,))
+    run('%s/bin/pip install -r %s/requirements.txt' % (
+            virtualenv_folder, source_folder
+    ))
+
+def _update_static_files(source_folder):
+    run('cd %s && ../virtualenv/bin/python3 manage.py collectstatic --noinput' % (
+        source_folder,
+    ))
+
+def _update_database(source_folder):
+    run('cd %s && ../virtualenv/bin/python3 manage.py migrate --noinput' % (
+        source_folder,
+    ))
+
+```
+
+## 9.2 试着部署脚本
+
+启动命令是
+fab deploy:host=thejojo@thejojo.chinanorth.cloudapp.chinacloudapi.cn
+
+貌似成功了。
+但是现在的问题是，我的本地git也需要提交，
+我的服务器也需要拉回来，可以么？
+
+下次如果想再创建虚拟机。
+只需要安装fabric，然后启动这个脚本。
+最后再配置nginx和gunicorn，最后是systempd。
+就完成了。
+
+第九章结束。
+
+# 第十章 输入验证和测试的组织方式
 
