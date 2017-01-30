@@ -1138,3 +1138,10 @@ Student object (name: Michael)
 
 第十二章结束
 
+# 第十三章 试探javascript（跳过去了）
+
+新建一个lists/static/list.js文件
+
+然后在base模板里，添加这个js
+
+# 第十四章 部署新代码
