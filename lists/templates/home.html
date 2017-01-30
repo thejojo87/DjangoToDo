@@ -3,5 +3,5 @@
 
 {% block header_text %}Your To-Do Home Page{% endblock %}
 
-{% block form_action %}/lists/new {% endblock %}
+{% block form_action %}{% url 'lists:new_list' %}{% endblock %}
 

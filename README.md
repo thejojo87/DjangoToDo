@@ -950,3 +950,87 @@ fab deploy:host=thejojo@thejojo.chinanorth.cloudapp.chinacloudapi.cn
 
 # 第十章 输入验证和测试的组织方式
 
+在这里要做的是，检测是否为空。
+可以有两种方式，模型层面和表单层面。
+作者倾向于模型层面。
+
+http://python.usyiyi.cn/django/ref/models/fields.html
+
+这里揭示了null字段和blank字段。
+django，null默认是false，但是并没有什么用。并不会验证。
+
+## 10.3 在视图中显示模型验证错误
+
+首先在base.html的表单下面，新建一个error模块，如果出错，那么下面显示错误。
+
+为了要把错误传入视图，需要修改view函数，
+
+新建是new_list函数。
+
+```python
+def new_list(request):
+    list_ = List.objects.create()
+
+    item = Item(text=request.POST['item_text'],list=list_)
+    try:
+        item.full_clean()
+        item.save()
+    except ValidationError:
+        list_.delete()
+        error = "You can't have an empty list item"
+        return render(request, 'home.html', {"error": error})
+
+    return redirect('/lists/%d/' % (list_.id))
+````
+
+但是仅仅改成这样，并不能防止空字段。
+
+## 10.4 Django模式：在渲染表单的视图中处理post请求
+
+原来的方式是，显示list用一个地址和模板。
+add的时候使用另一个地址和模板。
+如果把这个改成在一个url里处理，那么好处是
+在一个url里既可以显示表单，又可以显示处理用户输入过程中遇到的错误。
+
+先把list template里，发送post的地址给改掉。
+
+然后把new_item 实现的功能转移到view_list中
+
+一共需要修改两处。
+一个是主页里空格的时候，newlist不能为空。
+另一个是list/3/具体目录里，不能新建为空。
+
+不过现在这里的try，except是重复的。需要重构。
+
+这里先把原来html文件硬编码的url换成django的url模板标签。
+
+再来就把views函数里，redirect硬编码的，也改。
+
+但是获取直接地址也是很有用的。
+django里每一个模型对象都对应一个特定的url，因此定义
+一个特殊的函数，作用是获取显示单个模型对象的页面url。
+因此在models里写一个get_absolute_url函数。
+
+```python
+class List(models.Model):
+
+    def get_absolute_url(self):
+        return reverse('lists:view_list',args=[self.id])
+```
+
+这样的话，下面两句，效果是一样的。
+
+```python
+   return redirect(list_)
+    # return redirect('lists:view_list' ,list_.id)
+
+```
+
+同样的方法修改view_list视图
+
+```python
+            return redirect(list_)
+            return redirect('/lists/%d/' % (list_.id))
+
+```
+

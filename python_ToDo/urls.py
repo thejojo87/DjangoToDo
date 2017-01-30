@@ -18,7 +18,6 @@ from django.contrib import admin
 from lists.views import home_page
 from lists.views import view_list
 from lists.views import new_list
-from lists.views import add_item
 from lists import views as lists_views
 
 urlpatterns = [
