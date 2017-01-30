@@ -1034,3 +1034,65 @@ class List(models.Model):
 
 ```
 
+第十章结束
+
+# 第十一章 简单的表单
+
+视图中处理验证的代码太多重复，所以django鼓励在表单里进行验证。
+
+表单可以有三种功能：
+处理用户输入，验证。
+在模板里使用，渲染html 和input等信息。
+数据存入数据库。
+
+新建一个forms文件
+
+新建一个form类。
+
+但是我们希望表单能重用在模型中定义好的验证规则。
+
+这里出现了class = Meta
+用这个来指定这个表单属于哪个模型，以及要使用哪个字段。
+
+```python
+EMPTY_LIST_ERROE = "You can't have an empty list item"
+
+
+class ItemForm(forms.models.ModelForm):
+
+    class Meta:
+        model = Item
+        fields = ('text',)
+        widgets = {
+            'text' : forms.fields.TextInput(attrs={
+                'placeholder': 'Enter a to-do item',
+                'class': 'form-control input-lg',
+        }),
+        }
+        error_messages = {
+            'text' : {'required': EMPTY_LIST_ERROE }
+        }
+
+```
+
+
+下一部就是要在视图里使用了。
+先改掉homepage，原来如下：表格是使用了html。
+现在要把form给传进去。
+
+
+```python
+    return render(request, 'home.html'
+    )
+
+    return render(request, 'home.html',{'form': ItemForm()}
+    )
+```
+
+不过这样的话，原来的网页标签都失效了。会变成500.
+new_list不会把表单传给home。
+因此要修改。
+
+## 11.5 使用表单自带的save方法
+
+表单需要直到把todo保存到哪个清单里。
