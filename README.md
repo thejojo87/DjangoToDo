@@ -1096,3 +1096,45 @@ new_list不会把表单传给home。
 ## 11.5 使用表单自带的save方法
 
 表单需要直到把todo保存到哪个清单里。
+
+第十一章结束
+
+# 第十二章 高级表单(检查重复，没看明白)
+
+### 12.1.1 在模型上禁止重复
+有两个方式。
+一个是在item model的text字段里，添加unique=True
+
+模型也可以使用class meta
+
+class = Meta:
+    unique_together = ('list', 'text')
+
+这样就可以list和text组合是唯一的。
+
+不过不太明白，如果存储的数据很大，这么短的时间内，是否查了数据库，禁止重复呢？
+
+__str__ 这个类是有着特殊的意义的。
+
+```python
+怎么才能打印得好看呢？只需要定义好__str__()方法，返回一个好看的字符串就可以了：
+
+>>> class Student(object):
+...     def __init__(self, name):
+...         self.name = name
+...     def __str__(self):
+...         return 'Student object (name: %s)' % self.name
+...
+>>> print Student('Michael')
+Student object (name: Michael)
+
+这样打印出来的实例，不但好看，而且容易看出实例内部重要的数据。
+
+```
+
+12.3 下面新建了一个form类，完全看不懂啊。
+
+12.4 在视图中使用刚才新建的类。
+
+第十二章结束
+
