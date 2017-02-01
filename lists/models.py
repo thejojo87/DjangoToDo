@@ -9,7 +9,7 @@ class List(models.Model):
         return reverse('lists:view_list',args=[self.id])
 
 class Item(models.Model):
-    text = models.TextField(default="")
+    text = models.TextField(max_length=100, default="")
     list = models.ForeignKey(List, default=None)
 
     class Meta:

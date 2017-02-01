@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&jdq6rb%l_zlj1j$!xhlu_1!ub$$i$ipl)y)(&0mdr0!o)pvvy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 # ALLOWED_HOSTS = ['thejojo.chinanorth.cloudapp.chinacloudapi.cn']
@@ -128,3 +128,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, './static'))
+
+# 这个是用来登陆后跳转到主页用的
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

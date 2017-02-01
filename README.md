@@ -1145,3 +1145,145 @@ Student object (name: Michael)
 然后在base模板里，添加这个js
 
 # 第十四章 部署新代码
+直接用git就可以了了
+
+遇到个数据库问题。
+
+django.db.utils.OperationalError: (1170, "BLOB/TEXT column 'id' used in key specification without a key length")
+
+这是因为django和mysql之间的bug。
+mysql不能允许不指定长度。
+所以需要
+text = models.TextField(default="",max_length=50)
+指定长度才可以。
+
+make migrations的时候，
+必须python manage.py makemigrations lists
+这样才能生成lists里定义的model。
+
+而且之前的migrations有错误。
+必须先把原来的migrations文件夹全部删掉。
+然后重新make migrations lists
+然后migrate才可以
+
+而且我把数据库删除了。
+因此superuser需要重新建。
+python manage.py createsuperuser
+密码需要8个字符至少
+
+
+
+
+
+# 用户系统
+
+因为原书里使用的认证登陆是mozilla开发的系统，但是这个已经停止维护了。
+
+我要自己做一个系统。
+
+一个用户可以有多个list-list有多个item。
+
+
+## 第一个步骤-新建navbar
+
+用户系统，首先必须要有个navbar，有注册和登陆。
+
+user是登陆admin之后就附带的信息。
+
+## 第二个步骤-添加注册链接和模板
+因为要使用系统自带的用户登陆系统。
+
+在lists/url里添加
+url(r'^accounts/', include('django.contrib.auth.urls'))
+那么就自动包含了下面的链接
+
+```python
+
+^login/$ [name='login']
+^logout/$ [name='logout']
+^password_change/$ [name='password_change']
+^password_change/done/$ [name='password_change_done']
+^password_reset/$ [name='password_reset']
+^password_reset/done/$ [name='password_reset_done']
+^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$ [name='password_reset_confirm']
+^reset/done/$ [name='password_reset_complete']
+
+```
+
+需要注意的事情是，login的默认模板，在registration/login.html
+所以要再templates里新建re的文件夹，然后新建html
+
+已经登陆的用户压根就不该接触到注册页面来。
+
+form都是自定义的。
+action也是include里，login函数。
+
+
+settings里添加这个，可以使登陆后跳转控制。
+
+这个是用来登陆后跳转到主页用的
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+logtout 虽然有提供，但是logout是从admin里退出的。
+
+django系统自带的管理后台和用户登陆的后台不应该是同一个东西。
+
+## 第三个步骤-修改表单样式（跳过去吧）
+
+表单的action地址已经有了。
+form.username什么的都是引用就可以了。
+既然地址有了，其实自己写个form就可以了。
+
+虽然django自定义的form是可以用。
+但是样式无法自定义，有诸多不方便的地方。
+还是有时间再重新写吧。
+
+```html
+form method="post" action="{% url 'lists:login' %}">
+{% csrf_token %}
+<table>
+<tr>
+    <td>{{ form.username.label_tag }}</td>
+    <td>{{ form.username }}</td>
+</tr>
+<tr>
+    <td>{{ form.password.label_tag }}</td>
+    <td>{{ form.password }}</td>
+</tr>
+</table>
+
+<input type="submit" value="login" />
+{#<input type="hidden" name="next" value="{{ next }}" />#}
+</form>
+
+```
+
+或者自己给form添加filter。
+比如说bootstrap的form表单 样式里，input标签的class都是form-control
+
+如何添加class？
+要么重写一个form类。
+要么添加filter
+
+https://shenxgan.github.io/django/publish/2015-08-03-django-user-login-style.html
+
+上面有教程。
+现在有个问题，django内置的注册这个函数是隐藏的。我们只提供了form，template。
+甚至对于form也是无法操作的。
+这里有个经典bug。表单提交失败后，刷新，会再次提交。
+这个正常应该在函数里设置redirect。但是内置的函数，就无法自定义了。
+这个以后自己写个函数解决吧。
+HttpResponseRedirect 这个会对防止刷新表单重复提交有帮助
+
+
+## 第四个步骤-User模型
+正常应该新建User的模型，但是要使用django内置的，只需要引用就可以了。
+from django.contrib.auth.models import User
+
+登陆admin之后就自动附带user信息，使用user.name和user.is_authenticated
+可以使用。
+
+## 登陆和退出完成
+这里休要修改表单刷新，还有，需要重新自己写整个函数和表单。
+
