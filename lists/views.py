@@ -2,8 +2,42 @@ from django.shortcuts import render,redirect
 from lists.models import Item,List
 from django.core.exceptions import ValidationError
 from lists.forms import ItemForm,ExistingListItemForm
-
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login,authenticate
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 # Create your views here.
+
+
+# 注册函数
+def register(request):
+    context = {}
+    if request.method == 'GET':
+        form = UserCreationForm()
+    else:
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            username = request.POST['username']
+            password = request.POST['password1']
+            user = authenticate(username=username, password=password)
+            login(request,user)
+            # return HttpResponseRedirect('/')
+            return HttpResponseRedirect(reverse('home'))
+
+            # return redirect(to='home')
+        # else:
+        #     return  HttpResponseRedirect('/lists/accounts/register',form.errors)
+
+    context['form'] = form
+    return render(request, 'registration/register.html', context)
+
+
+# 登陆函数
+
+
+
 
 def home_page(request):
     # return HttpResponse('<html><title>To-Do lists</title></html>')
@@ -22,6 +56,7 @@ def view_list(request, list_id):
         if form.is_valid():
             form.save()
             # Item.objects.create(text = request.POST['text'],list=list_)
+
             return redirect(list_)
     return render(request, 'list.html',{'list':list_, 'form':form}
     )

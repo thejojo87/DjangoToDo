@@ -36,7 +36,8 @@
             <div class="text-center">
 
                 <h1>{% block header_text %}{% endblock %}</h1>
-                {% block content %}
+                {% block content %} {% endblock %}
+                {% block todos %}
                 <form method="POST" action="{% block form_action %}{% endblock %}">
 
                     {{ form.text }}
@@ -55,8 +56,9 @@
 
                     {% endif %}
                 </form>
-
                 {% endblock %}
+
+
             </div>
         </div>
     </div>

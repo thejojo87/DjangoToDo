@@ -3,19 +3,23 @@
 {% block content %}
 {% block header_text %}Login Page{% endblock %}
 {% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
+<div id="form-error">
+{#	<p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>#}
+	<ul>
+        {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{#	{% endfor %}#}
+	</ul>
+</div>
+
+
+
 {% endif %}
 
-{#{% if next %}#}
-{#    {% if user.is_authenticated %}#}
-{#    <p>Your account doesn't have access to this page. To proceed,#}
-{#    please login with an account that has access.</p>#}
-{#    {% else %}#}
-{#    <p>Please login to see this page.</p>#}
-{#    {% endif %}#}
-{#{% endif %}#}
-
-<form method="post" action="{% url 'lists:login' %}" target="my_iframe">
+<form method="post" action="{% url 'lists:login' %}">
 {% csrf_token %}
 <table>
 <tr>
@@ -29,10 +33,13 @@
 </table>
 
 <input type="submit" value="login" />
-{#<iframe id="my_iframe" name="my_iframe" style="display:none;"></iframe>#}
+{#<input type="hidden" name="next" value="{{ next }}" />#}
+
 </form>
 
 {# Assumes you setup the password_reset view in your URLconf #}
 <p><a href="{% url 'lists:password_reset' %}">Lost password?</a></p>
 
+{% endblock %}
+{% block todos %}
 {% endblock %}

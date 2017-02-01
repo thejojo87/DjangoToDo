@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}register{% endblock %}
+{% block header_text %}Register Page{% endblock %}
+
+{% block content %}
+
+    {% if form.errors %}
+<div id="form-error">
+	<p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+	<ul>
+	{% for field in form %}
+{#        <div class="alert alert-danger">#}
+	{{ field.errors|escape}}
+
+{#        </div>#}
+
+	{% endfor %}
+	</ul>
+</div>
+{% endif %}
+        <!-- 填写用户注册信息的
+
+        表单 -->
+    <form method="post" action="{% url 'lists:register' %}">
+        {% for field in form %}
+            <div style="padding: 10px">
+                {{ field.label }}
+                {{ field }}
+            </div>
+        {% endfor %}
+        {% csrf_token %}
+        <button type="submit">注册</button>
+    </form>
+
+    <p>已有账号？请直接<a href={% url 'lists:login' %}>登录</a></p>
+
+
+{% endblock %}

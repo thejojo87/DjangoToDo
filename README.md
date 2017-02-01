@@ -1183,14 +1183,15 @@ python manage.py createsuperuser
 
 一个用户可以有多个list-list有多个item。
 
-
-## 第一个步骤-新建navbar
+## 导航栏模块
+### 第一个步骤-新建navbar
 
 用户系统，首先必须要有个navbar，有注册和登陆。
 
 user是登陆admin之后就附带的信息。
 
-## 第二个步骤-添加注册链接和模板
+## 注册和登陆退出模块
+### 第二个步骤-添加注册链接和模板
 因为要使用系统自带的用户登陆系统。
 
 在lists/url里添加
@@ -1228,8 +1229,12 @@ LOGOUT_REDIRECT_URL = '/'
 logtout 虽然有提供，但是logout是从admin里退出的。
 
 django系统自带的管理后台和用户登陆的后台不应该是同一个东西。
+管理员使用后台可以操作用户。
+但是用户注册的无法登陆管理员界面。
 
-## 第三个步骤-修改表单样式（跳过去吧）
+
+
+### 第三个步骤-修改表单样式（跳过去吧）
 
 表单的action地址已经有了。
 form.username什么的都是引用就可以了。
@@ -1277,13 +1282,52 @@ https://shenxgan.github.io/django/publish/2015-08-03-django-user-login-style.htm
 HttpResponseRedirect 这个会对防止刷新表单重复提交有帮助
 
 
-## 第四个步骤-User模型
+### 第四个步骤-User模型
 正常应该新建User的模型，但是要使用django内置的，只需要引用就可以了。
 from django.contrib.auth.models import User
 
 登陆admin之后就自动附带user信息，使用user.name和user.is_authenticated
 可以使用。
 
-## 登陆和退出完成
+### 登陆和退出完成
 这里休要修改表单刷新，还有，需要重新自己写整个函数和表单。
+
+### 注册功能-开始
+
+http://www.jianshu.com/p/77f17acd0efe
+
+这里写的最简单明了
+
+### 注册view写函数
+
+
+### 现在存在的问题：
+
+注册：
+注册成功-
+
+#### 注册成功后应该以注册者的身份进入主页。-解决了，
+我看到系统自带的login函数，就可以做到。
+所以跑过去看了一下。
+看到这两行。
+login(request,form.get_user())
+return HttpResponseRedirect('home')
+
+发现当保存了form的数据之后，运行了login函数。
+login函数的第二个选项是要提供user。
+所以新建了一个user模型。
+要注意的是，注册界面有password1和password2。
+然后redirect改成/就可以了。
+
+### 刷新后表单会提示再次提交。(算了，跳过去了)
+
+httpresponseredirect倒是可以解决。
+但是这样的话，errors无法显示呢。
+
+莫非要用到javascript和ajax么？
+
+## 用户信息模块
+
+### 1.创建用户信息模型
+
 
