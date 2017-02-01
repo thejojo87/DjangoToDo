@@ -10,9 +10,11 @@ class UserInfo(models.Model):
     belong_to = models.OneToOneField(to=User, related_name='info')
 
     # 添加要扩展到 User 中的新字段
-    age = models.IntegerField(null=True, blank=True)
-    address = models.CharField(max_length=50, null=True, blank=True)
+    age = models.IntegerField("年龄",null=True, blank=True)
+    address = models.CharField("地址",max_length=50, null=True, blank=True)
 
+    def __str__(self):
+        return self.belong_to
 
 class List(models.Model):
 

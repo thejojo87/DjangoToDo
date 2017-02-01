@@ -8,6 +8,12 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 # Create your views here.
 
+# 用户信息
+
+
+def userinfo(request):
+    return render(request, 'registration/userinfo.html')
+
 
 # 注册函数
 def register(request):

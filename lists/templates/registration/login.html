@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block title %}Login{% endblock %}
 {% block header_text %}Login Page{% endblock %}
+{% block content %}
+
 {% if form.errors %}
 <div id="form-error">
 {#	<p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>#}

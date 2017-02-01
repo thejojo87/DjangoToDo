@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}UserInfo{% endblock %}
+
+
+{% block header_text %}User Info Page{% endblock %}
+{% block content %}
+
+        <h3>用户信息</h3>
+
+    <p>用户名： {{ request.user.username }}</p>
+    <p>年龄： {{ request.user.info.age }}</p>
+    <p>所在地： {{ request.user.info.address }}</p>
+
+     <a href={% url 'home' %}>
+         <button>修改</button>
+     </a>
+
+
+{# Assumes you setup the password_reset view in your URLconf #}
+<p><a href="{% url 'home' %}">返回主页</a></p>
+
+{% endblock %}
+{% block todos %}
+{% endblock %}
+

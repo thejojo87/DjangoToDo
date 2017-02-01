@@ -1328,6 +1328,82 @@ httpresponseredirect倒是可以解决。
 
 ## 用户信息模块
 
+想要达到的目的是点击navbar上的登陆图标，就转到个人信息主页上。
+
+添加，修改。
+
+
 ### 1.创建用户信息模型
 
+新建一个UserInfo类。
+这里是有一对一关系，一个userinfo对应一个user。
+related_name是反向关联，能反向查找。
+然后是make migrations 和migrate命令。
 
+后台监控里添加很简单。
+在默认的admin.py文件里，引用模型，并且注册就可以了。
+但是我并没有看到user和userinfo之间的联系。
+而且所有的名字都是UserInfos,而且监控的字段很少。
+
+http://www.ziqiangxuetang.com/django/django-admin.html
+
+
+```python
+class UserInfoAdmin(admin.ModelAdmin):
+    list_display = ('belong_to','age','address',)
+
+admin.site.register(UserInfo,UserInfoAdmin)
+```
+
+所以需要新建一个__str__内置函数返回名字。
+而且返回要排列哪个。
+
+```python
+class UserInfo(models.Model):
+    # 一对一，一条信息，对应一个人
+    # related_name是反向关联
+    belong_to = models.OneToOneField(to=User, related_name='info')
+
+    # 添加要扩展到 User 中的新字段
+    age = models.IntegerField("年龄",null=True, blank=True)
+    address = models.CharField("地址",max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return self.belong_to
+```
+
+
+### 2.编写前端html文件
+
+有个问题，我怎么知道现在登陆的人是谁呢？
+哪个字段？
+因为之前有设定反向链接。
+request.user.info.xxx(对应字段名)就可以使用了。
+
+```html
+{% extends "base.html" %}
+
+{% block title %}UserInfo{% endblock %}
+
+
+{% block header_text %}User Info Page{% endblock %}
+{% block content %}
+
+        <h3>用户信息</h3>
+
+    <p>用户名： {{ request.user.username }}</p>
+    <p>年龄： {{ request.user.info.age }}</p>
+    <p>所在地： {{ request.user.info.address }}</p>
+
+     <a href={% url 'logout' %}>
+         <button>修改</button>
+     </a>
+{# Assumes you setup the password_reset view in your URLconf #}
+<p><a href="{% url 'home' %}">返回主页</a></p>
+
+{% endblock %}
+{% block todos %}
+{% endblock %}
+```
+
+### 3.添加url
